@@ -2,10 +2,16 @@
   "name": "nano-server",
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "dev": "bun --watch ./src/index.ts",
+    "test": "vitest"
+  },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "vitest": "^2.0.5"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   }
 }
+
