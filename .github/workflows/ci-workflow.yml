@@ -17,4 +17,4 @@ jobs:
       - name: Install Dependencies
         run: bun install
       - name: Run Vitest
-        run: vitest run
+        run: bun run test
