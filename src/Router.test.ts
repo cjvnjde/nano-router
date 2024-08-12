@@ -1,45 +1,66 @@
-import { describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test, vitest } from "vitest";
 import { Router } from "./Router";
 
 describe("Router", () => {
-  test("Should be possible to match existing router", () => {
-    const router = new Router();
+  let router: Router;
 
-    const cb1 = () => "test1";
-    const cb2 = () => "test2";
-    const cb3 = () => "test3";
+  beforeEach(() => {
+    router = new Router()
+  })
 
-    router.on("one/two", cb1);
-    router.on("one/five", cb2);
-    router.on("one", cb3);
+  test("Should allow adding simple routes", () => {
+    const handler = vitest.fn();
+    router.on("one", handler)
+    router.on("two/three", handler)
 
-    expect(router.match("one/two")?.callback).toBe(cb1);
-    expect(router.match("one")?.callback).toBe(cb3);
-  });
+    expect(true).toBeTruthy()
+  })
 
-  test("Should find path with params", () => {
-    const router = new Router();
+  test("Should correctly match short routes", () => {
+    const handler1 = vitest.fn();
+    const handler2 = vitest.fn();
+    router.on("one", handler1)
+    router.on(":two", handler2)
 
-    const cb1 = () => "test1";
-    const cb2 = () => "test2";
+    expect(router.match("one")?.params).toEqual({})
+    expect(router.match("three")?.params).toEqual({ two: "three" })
+    expect(router.match("one")?.handler).toBe(handler1)
+    expect(router.match("three")?.handler).toBe(handler2)
+  })
 
-    router.on("one/:id", cb1);
-    router.on("one/:id/update", cb2);
+  test("Should match routes with multiple parameters", () => {
+    const handler = vitest.fn();
+    router.on(":one/:two/:three/:four/:five", handler)
 
-    expect(router.match("one/2")?.callback).toBe(cb1);
-    expect(router.match("one/1/update")?.callback).toBe(cb2);
-  });
+    expect(router.match("1/2/3/4/5")?.params).toEqual({ one: "1", two: "2", three: "3", four: "4", five: "5"})
+    expect(router.match("1/2/3/4/5")?.handler).toBe(handler)
+  })
 
-  test("Should return params", () => {
-    const router = new Router();
+  test("Should match multiple routes with and without parameters", () => {
+    const handler1 = vitest.fn();
+    const handler2 = vitest.fn();
+    const handler3 = vitest.fn();
+    router.on("one/:two", handler1)
+    router.on("one/three", handler2)
+    router.on("one/:three/four/:five", handler3)
 
-    const cb1 = () => "test1";
-    const cb2 = () => "test2";
+    expect(router.match("one/2")?.params).toEqual({ two: "2"})
+    expect(router.match("one/three")?.params).toEqual({})
+    expect(router.match("one/three/four/55")?.params).toEqual({ three: "three", five: "55"})
+    expect(router.match("one/2")?.handler).toBe(handler1)
+    expect(router.match("one/three")?.handler).toBe(handler2)
+    expect(router.match("one/three/four/55")?.handler).toBe(handler3)
+  })
 
-    router.on("one/:id", cb1);
-    router.on("one/:id/update", cb2);
+  test("Should match different routes with varying numbers of parameters", () => {
+    const handler1 = vitest.fn();
+    const handler2 = vitest.fn();
+    router.on(":one/:two/:three/:four/:five", handler1)
+    router.on(":a/:b/:c", handler2)
 
-    expect(router.match("one/2")?.params).toEqual({ id: "2" });
-    expect(router.match("one/1/update")?.params).toEqual({ id: "1" });
-  });
-});
+    expect(router.match("1/2/3/4/5")?.params).toEqual({ one: "1", two: "2", three: "3", four: "4", five: "5"})
+    expect(router.match("1/2/3")?.params).toEqual({ a: "1", b: "2", c: "3"})
+    expect(router.match("1/2/3/4/5")?.handler).toBe(handler1)
+    expect(router.match("1/2/3")?.handler).toBe(handler2)
+  })
+})
