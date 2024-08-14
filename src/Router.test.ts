@@ -75,4 +75,29 @@ describe("Router", () => {
       expect(router.match("1/2/3")?.handler).toBe(handler2)
     })
   })
+
+  describe("Wildcard params", () => {
+    test("Should be possible to use wildcard params", () => {
+      const handler1 = vitest.fn();
+      const handler2 = vitest.fn();
+      router.on("one/*/two", handler1)
+      router.on("three/*", handler2)
+
+      expect(router.match("one/test/two")?.handler).toBe(handler1)
+      expect(router.match("three/anything")?.handler).toBe(handler2)
+    })
+
+    test("Should be possible to use wildcard together with params", () => {
+
+      const handler1 = vitest.fn();
+      const handler2 = vitest.fn();
+      router.on("one/*/two/:id", handler1)
+      router.on("three/*/:id2", handler2)
+
+      expect(router.match("one/test/two/1")?.params).toEqual({ id: "1" })
+      expect(router.match("one/test/two/1")?.handler).toBe(handler1)
+      expect(router.match("three/anything/2")?.params).toEqual({ id2: "2"})
+      expect(router.match("three/anything/2")?.handler).toBe(handler2)
+    })
+  })
 })

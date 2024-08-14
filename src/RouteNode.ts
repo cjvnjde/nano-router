@@ -7,7 +7,7 @@ function isParametrized(pathPart: string) {
 }
 
 function getPathPartName(pathPart: string) {
-  if (isParametrized(pathPart)) {
+  if (isParametrized(pathPart) || pathPart === WILDCARD) {
     return WILDCARD;
   }
 
@@ -18,7 +18,7 @@ class RouteNode {
   private children: Record<string, RouteNode> = {};
   private params: string[] = [];
   private handler: Handler | null = null;
-  private name: string = "root";
+  private type: "default" | "parametrized" | "wildcard" = "default"
 
   public add(path: string[], handler: Handler, index = -1, params: string[] = []) {
     if (path.length - 1 <= index) {
@@ -35,16 +35,26 @@ class RouteNode {
       this.children[nextName] = new RouteNode();
     }
 
+    let nextParams = params
 
-    this.children[nextName].name = nextName;
-    this.children[nextName].add(path, handler, index + 1, nextName === WILDCARD ? [...params, nextPathPart.slice(1)] : params);
+    if (nextName === WILDCARD && nextPathPart !== WILDCARD) {
+      nextParams = [...params, nextPathPart.slice(1)]
+      this.children[nextName].type = "parametrized"
+    }
+
+    if (nextPathPart === WILDCARD) {
+      this.children[nextName].type = "wildcard"
+    }
+
+
+    this.children[nextName].add(path, handler, index + 1, nextParams);
   }
 
   public resolve(path: string[], params: string[] = [], index = -1): { handler: Handler, params: Params } | null {
     let paramsData = params;
     const currentPathPart = path[index + 1];
 
-    if (this.name === WILDCARD) {
+    if (this.type === "parametrized") {
       paramsData = [...paramsData, path[index]];
     }
 
