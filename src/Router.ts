@@ -1,23 +1,28 @@
 import type { Handler, Params } from "./type";
 import { RouteNode } from "./RouteNode";
 
-function splitPath(path: string) {
-  return path.split("/").filter(Boolean)
-}
-
 class Router {
   private root = new RouteNode();
+  private dividerRegex: RegExp;
+
+  constructor(dividers: string[] = ["/", "-"]) {
+    this.dividerRegex = new RegExp(`[${dividers.join('')}]`, 'g');
+  }
 
   public on(path: string, handler: Handler) {
-    const shatteredPath = splitPath(path);
+    const shatteredPath = this.splitPath(path);
 
     this.root.add(shatteredPath, handler);
   }
 
   public match(path: string): { handler: Handler, params: Params} | null {
-    const shatteredPath = splitPath(path);
+    const shatteredPath = this.splitPath(path);
 
     return this.root.resolve(shatteredPath)
+  }
+
+  private splitPath(path: string) {
+    return path.split(this.dividerRegex).filter(Boolean);
   }
 }
 

@@ -88,7 +88,6 @@ describe("Router", () => {
     })
 
     test("Should be possible to use wildcard together with params", () => {
-
       const handler1 = vitest.fn();
       const handler2 = vitest.fn();
       router.on("one/*/two/:id", handler1)
@@ -98,6 +97,16 @@ describe("Router", () => {
       expect(router.match("one/test/two/1")?.handler).toBe(handler1)
       expect(router.match("three/anything/2")?.params).toEqual({ id2: "2"})
       expect(router.match("three/anything/2")?.handler).toBe(handler2)
+    })
+  })
+
+  describe("Multiple params in one route part", () => {
+    test("Should be possible to have multiple variables in one route", () => {
+      const handler1 = vitest.fn();
+      router.on("one/:id1-:id2/:id3", handler1)
+
+      expect(router.match("one/1-2/3")?.params).toEqual({ id1: "1", id2: "2", id3: "3" })
+      expect(router.match("one/1-2/3")?.handler).toBe(handler1)
     })
   })
 })
