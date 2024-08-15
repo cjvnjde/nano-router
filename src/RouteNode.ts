@@ -6,23 +6,49 @@ function isParametrized(pathPart: string) {
   return pathPart.startsWith(":");
 }
 
+function isOptional(pathPart: string) {
+  return pathPart.endsWith("?");
+}
+
+function getParamName(_name: string) {
+  let name = _name;
+
+  if (isOptional(name)) {
+    name = name.slice(0, -1);
+  }
+
+  if (isParametrized(name)) {
+    name = name.slice(1);
+  }
+
+  return name;
+}
+
 function getPathPartName(pathPart: string) {
   if (isParametrized(pathPart) || pathPart === WILDCARD) {
     return WILDCARD;
   }
 
-  return pathPart;
+  return getParamName(pathPart);
 }
 
 class RouteNode {
   private children: Record<string, RouteNode> = {};
   private params: string[] = [];
-  private handler: Handler | null = null;
+  #handler: Handler | null = null;
   private type: "default" | "parametrized" | "wildcard" = "default";
-  private name: string;
+  private readonly name: string;
 
   constructor(name: string = "root") {
-    this.name = name
+    this.name = name;
+  }
+
+  private set handler(cb: Handler) {
+    if (this.#handler) {
+      throw new Error("You cannot redefine handler");
+    }
+
+    this.#handler = cb;
   }
 
   public add(path: string[], handler: Handler, index = -1, params: string[] = []) {
@@ -36,6 +62,11 @@ class RouteNode {
     const nextName = getPathPartName(nextPathPart);
     const hasChild = nextName in this.children;
 
+    if (isOptional(nextPathPart)) {
+      this.handler = handler;
+      this.params.push(...params);
+    }
+
     if (!hasChild) {
       this.children[nextName] = new RouteNode(nextName);
     }
@@ -43,7 +74,7 @@ class RouteNode {
     let nextParams = params;
 
     if (nextName === WILDCARD && nextPathPart !== WILDCARD) {
-      nextParams = [...params, nextPathPart.slice(1)];
+      nextParams = [...params, getParamName(nextPathPart)];
       this.children[nextName].type = "parametrized";
     }
 
@@ -55,7 +86,11 @@ class RouteNode {
     this.children[nextName].add(path, handler, index + 1, nextParams);
   }
 
-  public resolve(path: string[], params: string[] = [], index = -1): { handler: Handler, params: Params } | null {
+  public resolve(path: string[], params: string[] = [], index = -1, potential?: {
+    node: RouteNode,
+    params: string[],
+    index: number
+  }): { handler: Handler, params: Params } | null {
     let paramsData = params;
     const currentPathPart = path[index + 1];
 
@@ -64,7 +99,11 @@ class RouteNode {
     }
 
     if (path.length - 1 === index) {
-      if (!this.handler) {
+      if (!this.#handler) {
+        if (potential) {
+          return potential.node.resolve(path, potential.params, potential.index + 1);
+        }
+
         return null;
       }
 
@@ -74,26 +113,36 @@ class RouteNode {
       }, {});
 
       return {
-        handler: this.handler,
+        handler: this.#handler,
         params: paramsObj,
       };
     }
 
     let child = this.children[currentPathPart];
 
-    if (child && (WILDCARD in this.children) && path.length - 2 > index) {
-      child = this.children[WILDCARD];
+    if (WILDCARD in this.children && path.length - 2 > index) {
+      if (!child) {
+        child = this.children[WILDCARD];
+      } else if (!potential) {
+        potential = {
+          node: this.children[WILDCARD],
+          index,
+          params: paramsData,
+        };
+      }
     }
 
     if (!child) {
       if (WILDCARD in this.children) {
         child = this.children[WILDCARD];
+      } else if (potential) {
+        return potential.node.resolve(path, potential.params, potential.index + 1);
       } else {
         return null;
       }
     }
 
-    return child.resolve(path, paramsData, index + 1);
+    return child.resolve(path, paramsData, index + 1, potential);
   }
 
   public toString(indentation: string = "", lastChild: boolean = true): string {
