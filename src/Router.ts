@@ -24,6 +24,10 @@ class Router {
   private splitPath(path: string) {
     return path.split(this.dividerRegex).filter(Boolean);
   }
+
+  public toString = (): string => {
+    return this.root.toString()
+  }
 }
 
 export {

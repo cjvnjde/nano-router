@@ -18,7 +18,12 @@ class RouteNode {
   private children: Record<string, RouteNode> = {};
   private params: string[] = [];
   private handler: Handler | null = null;
-  private type: "default" | "parametrized" | "wildcard" = "default"
+  private type: "default" | "parametrized" | "wildcard" = "default";
+  private name: string;
+
+  constructor(name: string = "root") {
+    this.name = name
+  }
 
   public add(path: string[], handler: Handler, index = -1, params: string[] = []) {
     if (path.length - 1 <= index) {
@@ -32,18 +37,18 @@ class RouteNode {
     const hasChild = nextName in this.children;
 
     if (!hasChild) {
-      this.children[nextName] = new RouteNode();
+      this.children[nextName] = new RouteNode(nextName);
     }
 
-    let nextParams = params
+    let nextParams = params;
 
     if (nextName === WILDCARD && nextPathPart !== WILDCARD) {
-      nextParams = [...params, nextPathPart.slice(1)]
-      this.children[nextName].type = "parametrized"
+      nextParams = [...params, nextPathPart.slice(1)];
+      this.children[nextName].type = "parametrized";
     }
 
     if (nextPathPart === WILDCARD) {
-      this.children[nextName].type = "wildcard"
+      this.children[nextName].type = "wildcard";
     }
 
 
@@ -89,6 +94,19 @@ class RouteNode {
     }
 
     return child.resolve(path, paramsData, index + 1);
+  }
+
+  public toString(indentation: string = "", lastChild: boolean = true): string {
+    let result = `${indentation}${lastChild ? "└─" : "├─"} ${this.name} [type: ${this.type}, params: [${this.params.join(", ")}]]\n`;
+
+    const childrenKeys = Object.keys(this.children);
+    childrenKeys.forEach((key, index) => {
+      const child = this.children[key];
+      const isLast = index === childrenKeys.length - 1;
+      result += child.toString(indentation + (lastChild ? "   " : "│  "), isLast);
+    });
+
+    return result;
   }
 }
 
