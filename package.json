@@ -1,9 +1,9 @@
 {
-  "name": "nano-server",
-  "module": "index.ts",
+  "name": "nano-router",
+  "module": "src/Router.ts",
   "type": "module",
   "scripts": {
-    "dev": "bun --watch ./src/index.ts",
+    "dev": "bun --watch ./src/Router.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

@@ -1,20 +1,9 @@
-# nano-server
+# @cjvnjde/nano-router
 
-To install dependencies:
+A simple and fast router for Node servers.
 
-```bash
-bun install
-```
+## Features
 
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.1.22. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
-
-# TODO
-
- - [ ] regexp support
- - [ ] an optional parameter in the middle
+- Lightweight and minimal
+- Easy to use
+- High performance
