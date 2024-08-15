@@ -1,11 +1,19 @@
 import type { Handler, Params } from "./type";
 import { RouteNode } from "./RouteNode";
 
+const forbiddenDividers = ["?", ":"]
+
 class Router {
   private root = new RouteNode();
   private dividerRegex: RegExp;
 
   constructor(dividers: string[] = ["/", "-"]) {
+    for (const divider of dividers) {
+      if (forbiddenDividers.includes(divider)) {
+        throw new Error(`Divider "${divider}" is forbidden.`);
+      }
+    }
+
     this.dividerRegex = new RegExp(`[${dividers.join('')}]`, 'g');
   }
 
@@ -16,7 +24,8 @@ class Router {
   }
 
   public match(path: string): { handler: Handler, params: Params} | null {
-    const shatteredPath = this.splitPath(path);
+    const [urlPath] = path.split('?');
+    const shatteredPath = this.splitPath(urlPath);
 
     return this.root.resolve(shatteredPath)
   }

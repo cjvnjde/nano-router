@@ -45,7 +45,7 @@ class RouteNode {
 
   private set handler(cb: Handler) {
     if (this.#handler) {
-      throw new Error("You cannot redefine handler");
+      throw new Error("Handler is already defined and cannot be reassigned.");
     }
 
     this.#handler = cb;
