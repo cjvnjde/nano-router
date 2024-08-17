@@ -1,5 +1,8 @@
 {
   "name": "@cjvnjde/nano-router",
-  "version": "0.1.0",
-  "exports": "./src/Router.ts"
+  "version": "0.1.1",
+  "exports": "./dist/index.js",
+  "publish": {
+    "exclude": ["!dist"]
+  }
 }

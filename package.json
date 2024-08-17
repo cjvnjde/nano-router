@@ -1,11 +1,21 @@
 {
-  "name": "nano-router",
-  "module": "src/Router.ts",
+  "name": "@cjvjde/nano-router",
+  "version": "0.1.1",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "dev": "bun --watch ./src/Router.ts",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "build": "tsc --project ./tsconfig.json",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -15,4 +25,3 @@
     "typescript": "^5.0.0"
   }
 }
-
