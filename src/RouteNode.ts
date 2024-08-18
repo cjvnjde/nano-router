@@ -1,4 +1,4 @@
-import type { Handler, Params } from "./type";
+import type { Params } from "./type";
 
 const WILDCARD = "*" as const;
 
@@ -32,8 +32,8 @@ function getPathPartName(pathPart: string) {
   return getParamName(pathPart);
 }
 
-class RouteNode {
-  private children: Record<string, RouteNode> = {};
+class RouteNode<Handler extends Function> {
+  private children: Record<string, RouteNode<Handler>> = {};
   private params: string[] = [];
   #handler: Handler | null = null;
   private type: "default" | "parametrized" | "wildcard" = "default";
@@ -51,7 +51,12 @@ class RouteNode {
     this.#handler = cb;
   }
 
-  public add(path: string[], handler: Handler, index = -1, params: string[] = []) {
+  public add(
+    path: string[],
+    handler: Handler,
+    index = -1,
+    params: string[] = [],
+  ) {
     if (path.length - 1 <= index) {
       this.handler = handler;
       this.params.push(...params);
@@ -68,7 +73,7 @@ class RouteNode {
     }
 
     if (!hasChild) {
-      this.children[nextName] = new RouteNode(nextName);
+      this.children[nextName] = new RouteNode<Handler>(nextName);
     }
 
     let nextParams = params;
@@ -82,15 +87,19 @@ class RouteNode {
       this.children[nextName].type = "wildcard";
     }
 
-
     this.children[nextName].add(path, handler, index + 1, nextParams);
   }
 
-  public resolve(path: string[], params: string[] = [], index = -1, potential?: {
-    node: RouteNode,
-    params: string[],
-    index: number
-  }): { handler: Handler, params: Params } | null {
+  public resolve(
+    path: string[],
+    params: string[] = [],
+    index = -1,
+    potential?: {
+      node: RouteNode<Handler>;
+      params: string[];
+      index: number;
+    },
+  ): { handler: Handler; params: Params } | null {
     let paramsData = params;
     const currentPathPart = path[index + 1];
 
@@ -101,16 +110,23 @@ class RouteNode {
     if (path.length - 1 === index) {
       if (!this.#handler) {
         if (potential) {
-          return potential.node.resolve(path, potential.params, potential.index + 1);
+          return potential.node.resolve(
+            path,
+            potential.params,
+            potential.index + 1,
+          );
         }
 
         return null;
       }
 
-      const paramsObj = this.params.reduce<Record<string, string>>((obj, name, index) => {
-        obj[name] = paramsData[index];
-        return obj;
-      }, {});
+      const paramsObj = this.params.reduce<Record<string, string>>(
+        (obj, name, index) => {
+          obj[name] = paramsData[index];
+          return obj;
+        },
+        {},
+      );
 
       return {
         handler: this.#handler,
@@ -136,7 +152,11 @@ class RouteNode {
       if (WILDCARD in this.children) {
         child = this.children[WILDCARD];
       } else if (potential) {
-        return potential.node.resolve(path, potential.params, potential.index + 1);
+        return potential.node.resolve(
+          path,
+          potential.params,
+          potential.index + 1,
+        );
       } else {
         return null;
       }
@@ -152,13 +172,15 @@ class RouteNode {
     childrenKeys.forEach((key, index) => {
       const child = this.children[key];
       const isLast = index === childrenKeys.length - 1;
-      result += child.toString(indentation + (lastChild ? "   " : "│  "), isLast);
+      result += child.toString(
+        indentation + (lastChild ? "   " : "│  "),
+        isLast,
+      );
     });
 
     return result;
   }
 }
 
-export {
-  RouteNode,
-};
+export { RouteNode };
+

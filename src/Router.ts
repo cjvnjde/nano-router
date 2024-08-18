@@ -1,10 +1,10 @@
-import type { Handler, Params } from "./type";
+import type { Params } from "./type";
 import { RouteNode } from "./RouteNode";
 
-const forbiddenDividers = ["?", ":"]
+const forbiddenDividers = ["?", ":"];
 
-class Router {
-  private root = new RouteNode();
+class Router<Handler extends Function> {
+  private root = new RouteNode<Handler>();
   private dividerRegex: RegExp;
 
   constructor(dividers: string[] = ["/", "-"]) {
@@ -14,7 +14,7 @@ class Router {
       }
     }
 
-    this.dividerRegex = new RegExp(`[${dividers.join('')}]`, 'g');
+    this.dividerRegex = new RegExp(`[${dividers.join("")}]`, "g");
   }
 
   public on(path: string, handler: Handler) {
@@ -23,11 +23,11 @@ class Router {
     this.root.add(shatteredPath, handler);
   }
 
-  public match(path: string): { handler: Handler, params: Params} | null {
-    const [urlPath] = path.split('?');
+  public match(path: string): { handler: Handler; params: Params } | null {
+    const [urlPath] = path.split("?");
     const shatteredPath = this.splitPath(urlPath);
 
-    return this.root.resolve(shatteredPath)
+    return this.root.resolve(shatteredPath);
   }
 
   private splitPath(path: string) {
@@ -35,10 +35,9 @@ class Router {
   }
 
   public toString = (): string => {
-    return this.root.toString()
-  }
+    return this.root.toString();
+  };
 }
 
-export {
-  Router
-}
+export { Router };
+
