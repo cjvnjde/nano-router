@@ -1,9 +1,9 @@
-import type { Params } from "./type";
+import type { Handler as HandlerCb, Params } from "./type";
 import { RouteNode } from "./RouteNode";
 
 const forbiddenDividers = ["?", ":"];
 
-class Router<Handler extends Function> {
+class Router<Handler extends Function = HandlerCb> {
   private root = new RouteNode<Handler>();
   private dividerRegex: RegExp;
 
