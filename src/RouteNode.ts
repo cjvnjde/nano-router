@@ -1,38 +1,10 @@
 import type { Params } from "./type";
+import { isOptional } from "./utils/isOptional";
+import { getParamName } from "./utils/getParamName";
+import { WILDCARD } from "./constants";
+import { getPathPartName } from "./utils/getPathPartName";
 
-const WILDCARD = "*" as const;
-
-function isParametrized(pathPart: string) {
-  return pathPart.startsWith(":");
-}
-
-function isOptional(pathPart: string) {
-  return pathPart.endsWith("?");
-}
-
-function getParamName(_name: string) {
-  let name = _name;
-
-  if (isOptional(name)) {
-    name = name.slice(0, -1);
-  }
-
-  if (isParametrized(name)) {
-    name = name.slice(1);
-  }
-
-  return name;
-}
-
-function getPathPartName(pathPart: string) {
-  if (isParametrized(pathPart) || pathPart === WILDCARD) {
-    return WILDCARD;
-  }
-
-  return getParamName(pathPart);
-}
-
-class RouteNode<Handler extends Function> {
+class RouteNode<Handler> {
   private children: Record<string, RouteNode<Handler>> = {};
   private params: string[] = [];
   #handler: Handler | null = null;
@@ -43,12 +15,12 @@ class RouteNode<Handler extends Function> {
     this.name = name;
   }
 
-  private set handler(cb: Handler) {
+  private set handler(handlerItem: Handler) {
     if (this.#handler) {
       throw new Error("Handler is already defined and cannot be reassigned.");
     }
 
-    this.#handler = cb;
+    this.#handler = handlerItem;
   }
 
   public add(

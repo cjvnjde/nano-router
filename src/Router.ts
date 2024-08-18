@@ -1,12 +1,12 @@
 import type { Handler as HandlerCb, Params } from "./type";
 import { RouteNode } from "./RouteNode";
 
-const forbiddenDividers = ["?", ":"];
+const forbiddenDividers = ["?", ":", "*"];
 
 /**
  * Represents a router that handles routing and matching of URL paths to handler functions.
  */
-class Router<Handler extends Function = HandlerCb> {
+class Router<Handler = HandlerCb> {
   private root = new RouteNode<Handler>();
   private dividerRegex: RegExp;
   private groupPrefix: string[] = [];
