@@ -245,7 +245,7 @@ describe("Router", () => {
       router.group("api", router => {
         router.on("/one", handler1);
         router.on("/", handler2);
-      })
+      });
 
       router.on("api2", handler3);
 
@@ -265,9 +265,9 @@ describe("Router", () => {
       router.group("api", router => {
         router.group("two", router => {
           router.on("2", handler1);
-        })
+        });
         router.on("1", handler2);
-      })
+      });
 
       router.on("api2", handler3);
 
@@ -321,5 +321,17 @@ describe("Router", () => {
       expect(router.match("api/path")?.handler).toBe(handler1);
       expect(router.match("api/path/different")?.handler).toBe(handler2);
     });
-  })
+  });
+
+  describe("Custom handler", () => {
+    test("Should be possible to pass custom handlers", () => {
+      const router = new Router<Record<string, string>>();
+
+      router.on("one", { "one": "two" });
+      router.on("two/three", { "three": "four" });
+
+      expect(router.match("one")?.handler).toEqual({ "one": "two" });
+      expect(router.match("two/three")?.handler).toEqual({ "three": "four" });
+    });
+  });
 });
