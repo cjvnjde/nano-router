@@ -109,6 +109,22 @@ router.on('/files/*', (req, res) => {
 // /files/images/photo.png -> Serving files
 ```
 
+### Groupping
+
+```js
+router.group("v1", router => {
+  router.on('/static/*', (req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('This is a static file route');
+  });
+
+  router.on('/api/*', (req, res) => {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ message: 'API route' }));
+  });
+})
+```
+
 See [tests](/src/Router.test.ts) for more examples.
 
 ## License

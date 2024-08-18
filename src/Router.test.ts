@@ -235,4 +235,91 @@ describe("Router", () => {
       expect(router.match("one")?.handler).toBe(handler);
     });
   });
+
+  describe("Router Grouping", () => {
+    test("Should correctly match routes within a single group", () => {
+      const handler1 = vitest.fn();
+      const handler2 = vitest.fn();
+      const handler3 = vitest.fn();
+
+      router.group("api", router => {
+        router.on("/one", handler1);
+        router.on("/", handler2);
+      })
+
+      router.on("api2", handler3);
+
+      expect(router.match("one")).toBeNull;
+      expect(router.match("/")).toBeNull;
+
+      expect(router.match("api/one")?.handler).toBe(handler1);
+      expect(router.match("api")?.handler).toBe(handler2);
+      expect(router.match("api2")?.handler).toBe(handler3);
+    });
+
+    test("Should correctly match routes within nested groups", () => {
+      const handler1 = vitest.fn();
+      const handler2 = vitest.fn();
+      const handler3 = vitest.fn();
+
+      router.group("api", router => {
+        router.group("two", router => {
+          router.on("2", handler1);
+        })
+        router.on("1", handler2);
+      })
+
+      router.on("api2", handler3);
+
+      expect(router.match("api/two/2")?.handler).toBe(handler1);
+      expect(router.match("api/1")?.handler).toBe(handler2);
+      expect(router.match("api2")?.handler).toBe(handler3);
+    });
+
+    test("Should correctly handle empty groups or routes with no handlers", () => {
+      const handler1 = vitest.fn();
+
+      router.group("empty", () => {
+        // Empty group with no routes
+      });
+
+      router.on("api3", handler1);
+
+      expect(router.match("empty")).toBeNull();
+      expect(router.match("empty/route")).toBeNull();
+      expect(router.match("api3")?.handler).toBe(handler1);
+    });
+
+    test("Should correctly match overlapping routes between groups", () => {
+      const handler1 = vitest.fn();
+      const handler2 = vitest.fn();
+
+      router.group("api", (router) => {
+        router.on("/shared", handler1);
+      });
+
+      router.group("api/shared", (router) => {
+        router.on("/inside", handler2);
+      });
+
+      expect(router.match("api/shared")?.handler).toBe(handler1);
+      expect(router.match("api/shared/inside")?.handler).toBe(handler2);
+    });
+
+    test("Should correctly handle routes with similar prefixes but different handlers", () => {
+      const handler1 = vitest.fn();
+      const handler2 = vitest.fn();
+
+      router.group("api", (router) => {
+        router.on("/path", handler1);
+      });
+
+      router.group("api/path", (router) => {
+        router.on("/different", handler2);
+      });
+
+      expect(router.match("api/path")?.handler).toBe(handler1);
+      expect(router.match("api/path/different")?.handler).toBe(handler2);
+    });
+  })
 });
