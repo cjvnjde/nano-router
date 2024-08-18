@@ -3,6 +3,9 @@ import { RouteNode } from "./RouteNode";
 
 const forbiddenDividers = ["?", ":"];
 
+/**
+ * Represents a router that handles routing and matching of URL paths to handler functions.
+ */
 class Router<Handler extends Function = HandlerCb> {
   private root = new RouteNode<Handler>();
   private dividerRegex: RegExp;
@@ -12,7 +15,6 @@ class Router<Handler extends Function = HandlerCb> {
    * Creates a new instance of the Constructor class.
    *
    * @param {string[]} dividers - An array of dividers used to split strings.
-   * @return {void}
    * @throws {Error} if a forbidden divider is encountered.
    */
   constructor(dividers: string[] = ["/", "-"]) {
@@ -33,7 +35,7 @@ class Router<Handler extends Function = HandlerCb> {
    *                        It takes a single parameter, `router`, which is the current router instance.
    * @return {void}
    */
-  public group(path: string, cb: (router: Router<Handler>) => void) {
+  public group(path: string, cb: (router: Router<Handler>) => void): void {
     const prefixPath = this.splitPath(path)
     this.groupPrefix.push(...prefixPath);
     cb(this);
@@ -48,17 +50,17 @@ class Router<Handler extends Function = HandlerCb> {
    *
    * @return {void}
    */
-  public on(path: string, handler: Handler) {
+  public on(path: string, handler: Handler): void {
     const shatteredPath = this.splitPath(path);
 
     this.root.add([...this.groupPrefix, ...shatteredPath], handler);
   }
 
   /**
-   * Matches the given path to a handler in the router.
+   * Matches a given path against the routes defined in the router.
    *
-   * @param path - The path to be matched.
-   * @returns An object containing the matched handler and any parameters extracted from the path, or null if no match is found.
+   * @param {string} path - The path to match against.
+   * @return {{ handler: Handler; params: Params } | null} - The matched handler and the extracted parameters, or `null` if no match was found.
    */
   public match(path: string): { handler: Handler; params: Params } | null {
     const [urlPath] = path.split("?");
