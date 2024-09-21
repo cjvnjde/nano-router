@@ -1,7 +1,6 @@
 # @cjvnjde/nano-router
 
-
-![JSR Version](https://img.shields.io/jsr/v/%40cjvnjde/nano-router)
+[![JSR Version](https://img.shields.io/jsr/v/%40cjvnjde/nano-router)](https://jsr.io/@cjvnjde/nano-router)
 
 [@cjvnjde/nano-router](https://jsr.io/@cjvnjde/nano-router) is a lightweight and flexible routing library designed for handling complex routes with support for path parameters, wildcard routes, and optional segments. This library is ideal for use in Node.js applications where efficient and dynamic routing is essential.
 This library was inspired by Fastify, a powerful and feature-rich web framework. However, [@cjvnjde/nano-router](https://jsr.io/@cjvnjde/nano-router) focuses on providing a minimalistic and focused routing solution without the overhead of additional features that are not always necessary.
