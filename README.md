@@ -9,9 +9,12 @@ This library was inspired by Fastify, a powerful and feature-rich web framework.
 * Path Parameters: Supports named parameters in routes for dynamic matching.
 * Wildcard Routes: Match routes with wildcard segments.
 * Optional Parameters: Handle optional segments in routes.
+* Route Grouping: Group routes with common prefixes to keep your code organized.
+* HTTP Method Support: Full support for GET, POST, PUT, DELETE, PATCH, OPTIONS, and HEAD methods
 
 ## Installation
 
+Install the package using the following command:
 ```bash
 npx jsr add @cjvnjde/nano-router
 ```
@@ -59,6 +62,8 @@ server.listen(3000, () => {
 
 ### Handling Wildcard Routes
 
+Wildcard routes allow for flexible matching of paths. For example, you can use them to match static file paths or any other dynamic segment.
+
 ```js
 router.on('/static/*', (req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -73,6 +78,8 @@ router.on('/api/*', (req, res) => {
 
 ### Optional Parameters in Routes
 
+Routes can have optional segments. These optional parameters allow you to match different lengths of the URL path.
+
 ```js
 router.on('/posts/:year/:month?/:day?', (req, res, params) => {
   res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -86,6 +93,8 @@ router.on('/posts/:year/:month?/:day?', (req, res, params) => {
 ```
 
 ### Combining Multiple Features
+
+You can combine path parameters, wildcard segments, and optional parameters to create more complex routes.
 
 ```js
 router.on('/user/:id/profile', (req, res, params) => {
@@ -111,6 +120,8 @@ router.on('/files/*', (req, res) => {
 
 ### Groupping
 
+You can group routes with a common prefix to simplify route management and keep your code clean. This is especially useful when dealing with APIs or versioned endpoints.
+
 ```js
 router.group("v1", router => {
   router.on('/static/*', (req, res) => {
@@ -125,8 +136,65 @@ router.group("v1", router => {
 })
 ```
 
-See [tests](/src/Router.test.ts) for more examples.
+### Handling HTTP Methods
+
+The `MethodRouter` allows you to handle different HTTP methods (e.g., GET, POST, PUT, DELETE, etc.) for the same URL pattern. Here's an example:
+
+```js
+const methodRouter = new MethodRouter();
+
+methodRouter.get('/items', (req, res) => {
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ message: 'GET items' }));
+});
+
+methodRouter.post('/items', (req, res) => {
+  res.writeHead(201, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ message: 'Item created' }));
+});
+
+// Example matches:
+// GET /items -> 'GET items'
+// POST /items -> 'Item created'
+```
+
+### Middleware-like Grouping for Organizing Complex Routes
+
+You can use the group function to create middleware-like behavior by organizing routes in a hierarchical way.
+
+```js
+methodRouter.group('api', (router) => {
+  router.get('/users', (req, res) => {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ message: 'List of users' }));
+  });
+
+  router.post('/users', (req, res) => {
+    res.writeHead(201, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ message: 'User created' }));
+  });
+});
+```
+
+### Error Handling
+
+You can define a default handler to handle unmatched routes, providing a 404 response for routes that are not registered.
+
+```js
+const server = http.createServer((req, res) => {
+  const match = router.match(req.method, req.url);
+
+  if (match) {
+    match.handler(req, res, match.params);
+  } else {
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('404 Not Found');
+  }
+});
+```
+
+See [tests](https://github.com/cjvnjde/nano-router/blob/main/src/Router.test.ts) for more examples.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](/LICENSE) file for more details.
+This project is licensed under the MIT License. See the [LICENSE](https://github.com/cjvnjde/nano-router/blob/main/LICENSE) file for more details.
