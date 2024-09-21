@@ -1,7 +1,10 @@
 # @cjvnjde/nano-router
 
-`@cjvnjde/nano-router` is a lightweight and flexible routing library designed for handling complex routes with support for path parameters, wildcard routes, and optional segments. This library is ideal for use in Node.js applications where efficient and dynamic routing is essential.
-This library was inspired by Fastify, a powerful and feature-rich web framework. However, @cjvnjde/nano-router focuses on providing a minimalistic and focused routing solution without the overhead of additional features that are not always necessary.
+
+![JSR Version](https://img.shields.io/jsr/v/%40cjvnjde/nano-router)
+
+[@cjvnjde/nano-router](https://jsr.io/@cjvnjde/nano-router) is a lightweight and flexible routing library designed for handling complex routes with support for path parameters, wildcard routes, and optional segments. This library is ideal for use in Node.js applications where efficient and dynamic routing is essential.
+This library was inspired by Fastify, a powerful and feature-rich web framework. However, [@cjvnjde/nano-router](https://jsr.io/@cjvnjde/nano-router) focuses on providing a minimalistic and focused routing solution without the overhead of additional features that are not always necessary.
 
 ## Features
 
@@ -15,8 +18,26 @@ This library was inspired by Fastify, a powerful and feature-rich web framework.
 ## Installation
 
 Install the package using the following command:
+
+npm:
 ```bash
 npx jsr add @cjvnjde/nano-router
+```
+yarn:
+```bash
+yarn dlx jsr add @cjvnjde/nano-router
+```
+pnpm:
+```bash
+pnpm dlx jsr add @cjvnjde/nano-router
+```
+bun:
+```bash
+bunx jsr add @cjvnjde/nano-router
+```
+deno:
+```bash
+deno add jsr:@cjvnjde/nano-router
 ```
 
 ## Usage
@@ -193,7 +214,34 @@ const server = http.createServer((req, res) => {
 });
 ```
 
+### Visualizing the Route Tree
+
+Use the toString() method to print the current structure of the route tree.
+
+```js
+console.log(router.toString());
+```
+
+This will output a tree-like structure:
+
+`one/:two`
+`one/three`
+`one/:three/four/:five`
+
+```txt
+└─ root [type: default, params: []]
+   └─ one [type: default, params: []]
+      ├─ * [type: parametrized, params: [two]]
+      │  └─ four [type: default, params: []]
+      │     └─ * [type: parametrized, params: [three, five]]
+      └─ three [type: default, params: []]
+```
+
 See [tests](https://github.com/cjvnjde/nano-router/blob/main/src/Router.test.ts) for more examples.
+
+## Complexity
+
+The match method theoretically has an O(1) complexity since it uses dictionaries to look up routes (excluding factors like URL splitting).
 
 ## License
 
