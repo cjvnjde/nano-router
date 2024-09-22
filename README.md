@@ -240,7 +240,7 @@ See [tests](https://github.com/cjvnjde/nano-router/blob/main/src/Router.test.ts)
 
 ## Complexity
 
-The match method theoretically has an O(1) complexity since it uses dictionaries to look up routes (excluding factors like URL splitting).
+Theoretically, the `match` method has O(n) complexity since it uses dictionaries to look up routes. The complexity depends only on the number of route fragments.
 
 ## License
 
